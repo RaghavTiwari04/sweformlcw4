@@ -4,7 +4,14 @@ import os
 
 
 class State:
-    def __init__(self, db_path="state.db"):
+    def __init__(self, db_path=None):
+        if db_path is None:
+            state_dir = os.environ.get("STATE_DIR", "")
+            if state_dir:
+                os.makedirs(state_dir, exist_ok=True)
+                db_path = os.path.join(state_dir, "state.db")
+            else:
+                db_path = "state.db"
         self.db_path = db_path
         self._setup_database()
 
