@@ -1,0 +1,71 @@
+• ingest streaming hospital messages (HL7 over TCP)
+• maintain live patient state
+• combine historical + real-time lab results
+• run your AKI prediction logic
+• trigger alerts over HTTP
+• survive restarts
+
+
+1. I will receive patient admit/discharge events (PAS) lab results (LIMS) all alerts
+HL7 messages over TCP wrapped in MLLP
+
+Overal objective:
+TCP stream → parser → state store → ML inference → HTTP alerts
+
+We must design:
+ -HL7 parser
+ -MLLP client:
+    connect via TCP
+    read framed HL7 messages
+    send ACKs properly
+    reconnect safely
+
+ -State engine
+    Who is currently in hospital	ADT A01/A03
+    Their demographics	ADT
+    Their past creatinine results	history.csv
+    New test results	ORU R01
+
+    so:
+        - How do we store state?
+        - What if messages arrive unordered?
+        - what happens on restart?
+
+
+On every new creatine: update patient history → run inference → maybe page (Notification) (HTTP POST)
+
+
+Resilience
+    handle resend on negative ACK
+    handle reconnect
+    don’t lose state
+
+
+What the simulator does:
+    ✔ sends HL7 messages one by one
+    ✔ waits for ACK
+    ✔ resends on error
+    ✔ replays from beginning for each new connection
+
+
+PAS -> patients objects identify by mrn
+    - patient admitted and discharge events
+LIMS -> orders and results for tests
+- Both of this systems communicate with US using HL7
+
+- This initial CSV file will not be updated. Once we’ve been sent a blood test result as a HL7 message, we won’t
+be told about it again.
+
+
+Hospital system → HL7 over MLLP → your service
+your service → ACK → next message sent
+
+
+
+
+HL7:
+segment name:
+    MSH → message info
+    PID → patient info
+    OBR → test time
+    OBX → test value
