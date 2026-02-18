@@ -33,13 +33,16 @@ spec:
         args: ["-m", "src.main"]
         env:
         - name: MLLP_ADDRESS
-          value: volantin-simulator:8440
+          value: volantin-simulator.coursework4:8440
         - name: PAGER_ADDRESS
-          value: volantin-simulator:8441
+          value: volantin-simulator.coursework4:8441
         - name: PYTHONUNBUFFERED
           value: "1"
         - name: STATE_DIR
           value: "/state"
+        ports:
+        - name: http
+          containerPort: 8000
         volumeMounts:
           - mountPath: "/data"
             name: hospital-history
